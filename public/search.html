@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Profile Search</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8">LinkedIn Profile Search</h1>
+        
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <form id="searchForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Keywords</label>
+                        <input type="text" name="keywords" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Industry</label>
+                        <input type="text" name="industry" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Job Title</label>
+                        <input type="text" name="title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Company</label>
+                        <input type="text" name="company" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Location</label>
+                        <input type="text" name="location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">School Attended</label>
+                        <input type="text" name="schoolAttended" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                </div>
+                
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Search
+                </button>
+            </form>
+        </div>
+        
+        <div id="results" class="space-y-4"></div>
+    </div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const params = new URLSearchParams();
+            
+            for (const [key, value] of formData.entries()) {
+                if (value) params.append(key, value);
+            }
+            
+            try {
+                const response = await fetch(`/api/search?${params.toString()}`);
+                const data = await response.json();
+                
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = data.results.map(profile => `
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-xl font-semibold mb-2">${profile.name}</h2>
+                        <p class="text-gray-600 mb-2">${profile.headline || ''}</p>
+                        <p class="text-gray-600 mb-2">🏢 ${profile.company || 'N/A'}</p>
+                        <p class="text-gray-600 mb-2">📍 ${profile.location || 'N/A'}</p>
+                        <p class="text-gray-600 mb-2">🏭 ${profile.industry || 'N/A'}</p>
+                        ${profile.email ? `<p class="text-gray-600">✉️ ${profile.email}</p>` : ''}
+                        ${profile.publicProfileUrl ? `
+                            <a href="${profile.publicProfileUrl}" target="_blank" 
+                               class="mt-4 inline-block text-blue-600 hover:text-blue-800">
+                                View LinkedIn Profile
+                            </a>
+                        ` : ''}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Search failed:', error);
+                alert('Search failed. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
